@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Investment Cockpit</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cockpit">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="theme-color" content="#0f6e74">
+<style>
+:root{color-scheme:dark;--bg:#0f1419;--surface:#171d24;--surface-2:#1f262f;--ink:#e8ecf0;--ink-2:#a6b0bb;--ink-3:#727d89;--line:#2a333d;
+ --accent:#4fb3b9;--accent-soft:#163c40;--good:#22b14c;--good-soft:#153a1a;--warn:#e0a400;--warn-soft:#3d2f0a;--crit:#e05252;--crit-soft:#3f1a1a;
+ --s1:#3987e5;--s2:#d95926;--s3:#199e70;--s4:#c98500;--s5:#d55181;--s6:#2e9c2e;--s7:#9085e9;
+ --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root{color-scheme:light;--bg:#f4f6f8;--surface:#fff;--surface-2:#eef1f4;--ink:#16202b;--ink-2:#55606d;--ink-3:#8a95a1;--line:#dde2e8;--accent:#0f6e74;--accent-soft:#dcefef;--good:#0c8a0c;--good-soft:#e2f5e2;--warn:#b98200;--warn-soft:#fdf1d3;--crit:#c43232;--crit-soft:#f8dcdc;--s1:#2a78d6;--s2:#eb6834;--s3:#1baf7a;--s4:#eda100;--s5:#e87ba4;--s6:#008300;--s7:#4a3aa7}}
+*{box-sizing:border-box}html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text",Segoe UI,Roboto,sans-serif;-webkit-text-size-adjust:100%;overscroll-behavior-y:none}
+.mono{font-family:"SF Mono",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:calc(var(--sat) + 10px) 16px 8px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
+header h1{font-size:17px;font-weight:600;margin:0;letter-spacing:-.01em}header .sub{font-size:11px;color:var(--ink-3)}
+header button{font:inherit;font-size:12px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2)}
+main{padding:12px 16px calc(var(--sab) + 76px)}
+section{display:none}section.on{display:block}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);font-weight:600;margin:18px 0 8px}h2:first-child{margin-top:4px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.tile .k{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em}.tile .v{font-size:19px;font-weight:600;margin-top:2px;line-height:1.2}.tile .s{font-size:11px;color:var(--ink-2);margin-top:4px}
+.tile.wide{grid-column:1/-1}
+.pos{color:var(--good)}.neg{color:var(--crit)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
+.card.stripe{border-left-width:4px}.BUY.stripe{border-left-color:var(--good)}.HOLD.stripe{border-left-color:var(--accent)}.TRIM.stripe{border-left-color:var(--warn)}.SELL.stripe{border-left-color:var(--crit)}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.row .t{font-weight:600;font-size:16px}
+.chip{display:inline-block;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;background:var(--surface-2);color:var(--ink-2)}
+.chip.BUY{background:var(--good-soft);color:var(--good)}.chip.HOLD{background:var(--accent-soft);color:var(--accent)}.chip.TRIM{background:var(--warn-soft);color:var(--warn)}.chip.SELL{background:var(--crit-soft);color:var(--crit)}.chip.ok{background:var(--good-soft);color:var(--good)}.chip.no{background:var(--crit-soft);color:var(--crit)}
+.small{font-size:12px;color:var(--ink-2)}.tiny{font-size:11px;color:var(--ink-3)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12px;margin-top:8px}.kv dt{color:var(--ink-3)}.kv dd{margin:0}
+.bar{display:flex;height:8px;border-radius:3px;overflow:hidden;background:var(--surface-2);gap:1px;margin-top:8px}.bar i{display:block;height:100%}
+.wbar{position:relative;height:8px;background:var(--surface-2);border-radius:3px;margin-top:6px}.wbar i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:3px}.wbar i.over{background:var(--warn)}.wbar b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--crit)}
+.note{background:var(--accent-soft);border-radius:12px;padding:12px;font-size:13px}.note p{margin:0 0 8px}.note p:last-child{margin:0}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.item{padding:10px 12px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}.item:last-child{border-bottom:0}
+.item .l{font-weight:600}.item .r{text-align:right;font-weight:600}.item .sub{grid-column:1/-1;font-size:12px;color:var(--ink-2)}
+.item.tap{cursor:pointer}.item .det{grid-column:1/-1;display:none;font-size:12px;padding-top:6px}.item.open .det{display:block}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px;-webkit-overflow-scrolling:touch}
+.chips button{flex:0 0 auto;font:inherit;font-size:12px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2)}.chips button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:11px;color:var(--ink-2);margin:6px 0 10px}.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px;background:var(--c)}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;padding:6px 4px calc(var(--sab) + 6px);z-index:6}
+nav button{flex:1;font:inherit;font-size:10px;letter-spacing:.02em;border:0;background:none;color:var(--ink-3);padding:4px 0;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}nav button.on{color:var(--accent)}
+#lock{position:fixed;inset:0;background:var(--bg);z-index:20;display:flex;align-items:center;justify-content:center;padding:24px}
+#lock form{width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px}
+#lock input{font:inherit;font-size:20px;letter-spacing:.2em;text-align:center;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+#lock button{font:inherit;font-size:15px;padding:12px;border-radius:10px;border:0;background:var(--accent);color:#fff;font-weight:600}
+#lock label{font-size:13px;color:var(--ink-2);display:flex;gap:8px;align-items:center}
+.err{color:var(--crit);font-size:13px;min-height:18px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}summary{font-weight:600;cursor:pointer}details ul{padding-left:18px;margin:8px 0 0;font-size:13px}details li{margin:3px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--ink-3);font-weight:500;font-size:11px}td.n,th.n{text-align:right}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--sab) + 84px);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:999px;font-size:12px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div id="lock"><form id="lockForm" autocomplete="off"><div style="text-align:center"><div style="font-size:22px;font-weight:600">Investment Cockpit</div><div class="small">Enter your PIN to decrypt today's data</div></div><input id="pin" type="password" inputmode="text" placeholder="PIN" autocapitalize="off"><label><input type="checkbox" id="remember" checked> Remember on this phone</label><button type="submit">Unlock</button><div class="err" id="lockErr"></div></form></div>
+<header><div><h1>Investment Cockpit</h1><div class="sub" id="stamp">loading&#8230;</div></div><button id="refresh">Refresh</button></header>
+<main>
+ <section id="today" class="on"></section>
+ <section id="actions"></section>
+ <section id="holdings"></section>
+ <section id="market"></section>
+ <section id="scan"></section>
+ <section id="rules"></section>
+</main>
+<nav id="nav">
+ <button data-t="today" class="on"><svg viewBox="0 0 24 24"><path d="M3 12l9-8 9 8M5 10v10h14V10"/></svg>Today</button>
+ <button data-t="actions"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M17 14l2 2 4-4"/></svg>Actions</button>
+ <button data-t="holdings"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Holdings</button>
+ <button data-t="market"><svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-8M21 8v5h-5"/></svg>Market</button>
+ <button data-t="scan"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Scan</button>
+ <button data-t="rules"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>Rules</button>
+</nav>
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
